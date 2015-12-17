@@ -1,0 +1,7 @@
+pip:
+    requests: latest
+    yaml: latest
+github:
+    https://github.com/fabshell/fabshell: master
+exec:
+    fabshell/fabshell.py
