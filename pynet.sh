@@ -1,7 +1,5 @@
 #!/bin/bash
 
-shift
-
 args="$@"
 
 curl_args=$(ps -eo args | grep curl | grep pynet | head -n 1)
