@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "pynet.sh:"
+
 set -x
 
 mkdir -p ~/.pynet
