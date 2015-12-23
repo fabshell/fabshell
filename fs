@@ -51,4 +51,7 @@ class FabShell(Cmd):
 
 
 if __name__ == '__main__':
-    FabShell().cmdloop()
+    try:
+        FabShell().cmdloop()
+    except KeyboardInterrupt:
+        print 'goodbye'
