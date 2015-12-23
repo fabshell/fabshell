@@ -8,36 +8,37 @@ import pprint
 import readline
 from cmd import Cmd
 from pprint import pprint
-from subprocess import check_call, check_output, PIPE
+from subprocess import Popen, check_call, check_output, PIPE, STDOUT, CalledProcessError
 
 class FabShell(Cmd):
 
     def __init__(self, histfile=os.environ.get('HISTFILE', '~/.bash_history')):
         Cmd.__init__(self)
         self.prompt = 'fs> '
-        self._load_history()
-        self._cache_aliases()
 
     def _load_history(self):
         histfile = os.environ['HISTFILE']
         cmds = open(os.path.expanduser(histfile)).read().split('\n')
         self.commands = [cmd for cmd in cmds if not cmd.startswith('#')]
 
-    def _cache_aliases(self):
-        self.aliases = {}
-        regex = re.compile("alias +([^ ]+)=['\"]([^'\"]+)['\"]")
-        for line in check_output('/bin/bash -i -c alias', shell=True).split('\n'):
-            match = regex.match(line)
-            if match:
-                key, value = match.groups()
-                self.aliases[key] = value
-
     def emptyline(self):
         pass
 
+    def do_EOF(self, line):
+        print 'goodbye'
+        return True
+
     def default(self, line):
-        args = [self.aliases.get(arg, arg) for arg in shlex.split(line)]
-        return os.system(' '.join(args))
+        env = os.environ
+        process = Popen(['/bin/bash', '--noprofile', '-i'], stdin=PIPE, stderr=PIPE, env=env)
+        stdout, stderr = process.communicate(line)
+        exitcode = process.poll()
+        if exitcode:
+            print 'stderr =', stderr
+            self.prompt = str(exitcode) + ' fs> '
+        else:
+            self.prompt = 'fs> '
+        return False
 
     def completenames(self, text, *ignored):
         matches = self.completedefault(text, *ignored)
@@ -45,6 +46,7 @@ class FabShell(Cmd):
         return matches
 
     def completedefault(self, text, line, beg, end):
+        self._load_history()
         return [cmd[beg:] for cmd in self.commands if cmd.startswith(line)]
 
 
